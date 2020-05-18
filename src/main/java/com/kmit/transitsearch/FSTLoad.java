@@ -52,13 +52,13 @@ public class FSTLoad {
 		System.out.println(fstMemory.ramBytesUsed());
 
 		System.out.println("Retrieval from FST in memory:");
-		value = Util.get(fstMemory, new BytesRef("360001360044"));
+		value = Util.get(fstMemory, new BytesRef("360001360026"));
 		System.out.println(value);
 
-		value = Util.get(fstMemory, new BytesRef("391243360004"));
+		value = Util.get(fstMemory, new BytesRef("560004574114"));
 		System.out.println(value);
 
-		value = Util.get(fstMemory, new BytesRef("sasas"));
+		value = Util.get(fstMemory, new BytesRef("591111574279"));
 		System.out.println(value);
 
 		IndexOutput out = dir.createOutput(FST_FILE + ".bin", null);
@@ -76,16 +76,16 @@ public class FSTLoad {
 
 		System.out.println("Retrieval from FST from disk:");
 
-		value = Util.get(fstDisk, new BytesRef("360001360045"));
+		value = Util.get(fstDisk, new BytesRef("360001360026"));
 		System.out.println(value);
 
-		value = Util.get(fstDisk, new BytesRef("391243360003"));
+		value = Util.get(fstDisk, new BytesRef("560004574114"));
 		System.out.println(value);
 
-		value = Util.get(fstDisk, new BytesRef("392150396570"));
+		value = Util.get(fstDisk, new BytesRef("591111574279"));
 		System.out.println(value);
 
-		value = Util.get(fstDisk, new BytesRef("700001500008"));
+		value = Util.get(fstDisk, new BytesRef("3600013600251A"));
 		System.out.println(value);
 
 	}
