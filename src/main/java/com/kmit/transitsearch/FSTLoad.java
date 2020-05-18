@@ -69,24 +69,26 @@ public class FSTLoad {
 		IndexInput in = dir.openInput(FST_FILE + ".bin", null);
 		try {
 			fstDisk = new FST<CharsRef>(in, output);
+
+			System.out.println("Retrieval from FST from disk:");
+
+			value = Util.get(fstDisk, new BytesRef("360001360026"));
+			System.out.println(value);
+
+			value = Util.get(fstDisk, new BytesRef("560004574114"));
+			System.out.println(value);
+
+			value = Util.get(fstDisk, new BytesRef("591111574279"));
+			System.out.println(value);
+
+			value = Util.get(fstDisk, new BytesRef("3600013600251A"));
+			System.out.println(value);
+
 		} finally {
 			in.close();
-			//dir.deleteFile(FST_FILE + ".bin"); //DO NOT DELETE
+			dir.deleteFile(FST_FILE + ".bin"); //DO NOT DELETE
 		}
 
-		System.out.println("Retrieval from FST from disk:");
-
-		value = Util.get(fstDisk, new BytesRef("360001360026"));
-		System.out.println(value);
-
-		value = Util.get(fstDisk, new BytesRef("560004574114"));
-		System.out.println(value);
-
-		value = Util.get(fstDisk, new BytesRef("591111574279"));
-		System.out.println(value);
-
-		value = Util.get(fstDisk, new BytesRef("3600013600251A"));
-		System.out.println(value);
-
+		
 	}
 }
