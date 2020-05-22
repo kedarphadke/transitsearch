@@ -86,9 +86,7 @@ public class FSTLoad {
 
 		} finally {
 			in.close();
-			dir.deleteFile(FST_FILE + ".bin"); //DO NOT DELETE
-		}
-
-		
+			//dir.deleteFile(FST_FILE + ".bin"); //DO NOT DELETE
+		}		
 	}
 }

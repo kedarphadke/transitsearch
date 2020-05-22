@@ -14,6 +14,7 @@ public class CacheManagement {
     private static final int OPTIONSELECTED = 1;
     private static final int LOADFST = 2;
     private static final int SEARCHTT = 3;
+    
     FST<CharsRef> transitTimeFST = null;
 
     private int state = WAITING;
@@ -43,8 +44,12 @@ public class CacheManagement {
         } else if(state == LOADFST)
         {
         	String car_type [] = theInput.split(",");
-        	loadFST (car_type[0], car_type[1]);
-        	theOutput = "FST loaded successfully";
+        	if (car_type.length != 2)
+        		theOutput = "Invalid Input";
+        	else {
+	        	loadFST (car_type[0], car_type[1]);
+	        	theOutput = "FST loaded successfully";
+        	}
         	state = WAITING;
         	
         } else if(state == SEARCHTT)
