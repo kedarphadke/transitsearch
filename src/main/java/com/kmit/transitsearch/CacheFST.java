@@ -6,11 +6,9 @@ import java.nio.file.Path;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
-import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRef;
 import org.apache.lucene.util.fst.CharSequenceOutputs;
 import org.apache.lucene.util.fst.FST;
-import org.apache.lucene.util.fst.Util;
 import org.apache.lucene.util.fst.Outputs;
 
 import java.util.HashMap;
@@ -20,119 +18,75 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 
 public class CacheFST {
-	public static void main(String args[]) throws IOException {
 
-		LoadingCache<String, TransitTime_FST> transitTimeCache = CacheBuilder.newBuilder().maximumSize(100) // maximum
-																											// 100
-																											// records
-																											// can be
-																											// cached
-				.expireAfterAccess(30, TimeUnit.MINUTES) // cache will expire after 30 minutes of access
-				.recordStats().build(new CacheLoader<String, TransitTime_FST>() { // build the cacheloader
+	public static final int CACHEEXPIRY = 60;
+	public String carrier;
+	public String transitType;
 
-					@Override
-					public TransitTime_FST load(String S3Key) throws Exception {
-						// make the expensive call
-						S3Key = "43c50cbf-6c83-4aa9-8057-8b3fafc1bfcb" + ".bin"; // bad but do it
-						return getFSTFromS3(S3Key);
-					}
-				});
+	public CacheFST(String carrierParam, String transitTypeParam) {
+		this.carrier = carrierParam;
+		this.transitType = transitTypeParam;
+	}
+
+	public FST<CharsRef> constructFST() throws ExecutionException {
 
 		try {
-			// on first invocation, cache will be populated with corresponding
-			// employee record
-			/*
-			 * System.out.println("Invocation #1");
-			 * System.out.println(transitTimeCache.get("100"));
-			 * System.out.println(transitTimeCache.get("103"));
-			 * System.out.println(transitTimeCache.get("110"));
-			 */
 
-			TransitTime_FST ttFst = transitTimeCache.get("43c50cbf-6c83-4aa9-8057-8b3fafc1bfcb" + ".bin");
-			FST<CharsRef> f = ttFst.getfst();
-			CharsRef value = Util.get(f, new BytesRef("360001360026"));
-			System.out.println(value);
+			LoadingCache<String, FST<CharsRef>> transitTimeCache = CacheBuilder.newBuilder().maximumSize(100) // maximum
+																												// 100
+																												// records
 
-			value = Util.get(f, new BytesRef("560004574114"));
-			System.out.println(value);
+					.expireAfterAccess(CACHEEXPIRY, TimeUnit.MINUTES) // cache will expire after 30 minutes of access
+					.recordStats().build(new CacheLoader<String, FST<CharsRef>>() { // build the cacheloader
 
-			value = Util.get(f, new BytesRef("591111574279"));
-			System.out.println(value);
-
-			value = Util.get(f, new BytesRef("3600013600251A"));
-			System.out.println(value);
-
-			// second invocation, data will be returned from cache
-			value = Util.get(f, new BytesRef("360001360026"));
-			System.out.println(value);
-
-			value = Util.get(f, new BytesRef("560004574114"));
-			System.out.println(value);
-
-			value = Util.get(f, new BytesRef("591111574279"));
-			System.out.println(value);
-
-			value = Util.get(f, new BytesRef("3600013600251A"));
-			System.out.println(value);
-
-			CacheStats stats = transitTimeCache.stats();
-			System.out.println("Request Count:" + stats.requestCount());
-			System.out.println("Hit Count:" + stats.hitCount());
-			System.out.println("Miss Count:" + stats.missCount());
-
+						@Override
+						public FST<CharsRef> load(String key) throws Exception {
+							// make the expensive call
+							return getFST(carrier, transitType);
+						}
+					});
+			return transitTimeCache.get(carrier + transitType);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
-	private static TransitTime_FST getFSTFromS3(String S3Key) throws IOException {
+	private static FST<CharsRef> getFST(String carrier,  String transitType) throws IOException {
 
-		// TODO at some point, write code to get from S3, now load it from file
+		String S3fileName = getS3Key(carrier, transitType);
+		
+		String key = carrier + transitType;
 
 		FST<CharsRef> fst;
 		final String FSTLOAD_DIR = "../projectData/fst"; // directory to persist FST
 		Path p = FileSystems.getDefault().getPath(FSTLOAD_DIR);
 		Directory dir = FSDirectory.open(p);
 
-		Map <String, TransitTime_FST> database = new HashMap<String, TransitTime_FST>();
+		Map<String, FST<CharsRef>> database = new HashMap<String, FST<CharsRef>>();
 
 		Outputs<CharsRef> output = CharSequenceOutputs.getSingleton();
-		
-		IndexInput in = dir.openInput(S3Key, null);
+
+		IndexInput in = dir.openInput(S3fileName, null);
 		try {
 			fst = new FST<CharsRef>(in, output);
-			TransitTime_FST ttFST = new TransitTime_FST(fst);
-			database.put(S3Key, ttFST);
+			database.put(key, fst);
 		} finally {
 			in.close();
 		}
 
-		return database.get(S3Key);
-	}
-}
-
-class TransitTime_FST {
-	FST<CharsRef> fst;
-
-	public TransitTime_FST(FST<CharsRef> fstParam) {
-		this.fst = fstParam;
+		return database.get(key);
 	}
 
-	public FST<CharsRef> getfst() {
-		return fst;
+	private static String getS3Key(String carrier, String transitType) {
+		// TODO Somneone has to write code to pull this from S3 based on some dynamoDB
+		// query...
+		// Assuming the file is magically available and moving on :)
+
+		return "43c50cbf-6c83-4aa9-8057-8b3fafc1bfcb" + ".bin";
 	}
 
-	public void setfst(FST<CharsRef> fstParam) {
-		this.fst = fstParam;
-	}
-
-	/*
-	 * @Override public String toString() { return
-	 * MoreObjects.toStringHelper(Employee.class) .add("Name", name)
-	 * .add("Department", dept) .add("Emp Id", emplD).toString(); }
-	 */
 }
