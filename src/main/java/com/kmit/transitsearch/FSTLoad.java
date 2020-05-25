@@ -24,7 +24,8 @@ import java.util.UUID;
 public class FSTLoad {
 	public static void main(String[] args) throws IOException {
 
-		final String LOAD_FILENAME = "../projectData/excel/kar_guj_5m.csv"; //file name with csv records
+		//final String LOAD_FILENAME = "../projectData/excel/kar_guj_5m.csv"; //file name with csv records
+		final String LOAD_FILENAME = "../projectData/excel/UPS_Road.csv"; //file name with csv records
 		final String FSTLOAD_DIR = "../projectData/fst"; // directory to persist FST
 		final String FST_FILE = UUID.randomUUID().toString(); // random file name for FST
 
@@ -72,7 +73,7 @@ public class FSTLoad {
 
 			System.out.println("Retrieval from FST from disk:");
 
-			value = Util.get(fstDisk, new BytesRef("360001360026"));
+			value = Util.get(fstDisk, new BytesRef("396386000000"));
 			System.out.println(value);
 
 			value = Util.get(fstDisk, new BytesRef("560004574114"));
