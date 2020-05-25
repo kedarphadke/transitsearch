@@ -26,7 +26,7 @@ public class CacheManagement {
         String theOutput = null;
         
         if (state == WAITING) {
-            theOutput = "Enter 1 to load an FST. Enter 2 to search for transit time. x to exit";
+            theOutput = "Enter 1 to load an FST. Enter 2 to search for transit time. 3 for cache stats. x to exit";
             state = OPTIONSELECTED;
         } else if (state == OPTIONSELECTED) {
             if (theInput.equalsIgnoreCase("1")) {
@@ -35,6 +35,10 @@ public class CacheManagement {
             } else if (theInput.equalsIgnoreCase("2")) {
             	theOutput = "Enter Business, Transit Type, From and To Zip code, example BA, Air, 500001,700002";
             	state = SEARCHTTRANSITTIME;
+            }
+            else if (theInput.equalsIgnoreCase("3")) {
+            	//theOutput = "Enter Business, Transit Type, From and To Zip code, example BA, Air, 500001,700002";
+            	state = CACHESTATS;
             }
             else if (theInput.equalsIgnoreCase("x")) {
             	theOutput = "Bye";
@@ -46,11 +50,11 @@ public class CacheManagement {
             }
         } else if(state == LOADFST)
         {
-        	String car_type [] = theInput.split(",");
+        	String car_type [] = theInput.strip().split(",");
         	if (car_type.length != 2)
         		theOutput = "Invalid Input, enter carrier, transit type, example BD, Air";
         	else {
-        		String cacheKey = getCacheKey(car_type[0], car_type[1]);
+        		String cacheKey = getCacheKey(car_type[0].strip(), car_type[1].strip());
         		cache.createFST(cacheKey);
 	        	theOutput = "FST loaded successfully";
         	}
@@ -58,16 +62,16 @@ public class CacheManagement {
         	
         } else if(state == SEARCHTTRANSITTIME)
         {
-        	String zip_from_to [] = theInput.split(",");
+        	String zip_from_to [] = theInput.strip().split(",");
         	if (zip_from_to.length == 4) {
         	LoadingCache<String, FST<CharsRef>>  localCache = cache.getCache();
-        	String cacheKey = zip_from_to[0] + zip_from_to [1];
+        	String cacheKey = zip_from_to[0].strip() + zip_from_to [1].strip();
         	FST<CharsRef> transitTimeFST = localCache.get(cacheKey);
         	if (transitTimeFST == null) {
         		theOutput = "Enter 1 to load an FST before you perform a search";
         	}
         	else {
-        		CharsRef value = Util.get(transitTimeFST, new BytesRef(zip_from_to[2] + zip_from_to[3]));
+        		CharsRef value = Util.get(transitTimeFST, new BytesRef(zip_from_to[2].strip() + zip_from_to[3].strip()));
     			//System.out.println(value);
             	theOutput = "TT Value for : " + zip_from_to [2] + " and " + zip_from_to [3] + " is: " + value;
             	state = WAITING;
